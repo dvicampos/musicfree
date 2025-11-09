@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h1>Archivos descargados</h1>
+
+  {% if items %}
+    <div class="table">
+      <div class="t-head">
+        <div>Nombre</div>
+        <div class="col-size">Tamaño</div>
+        <div class="col-actions">Acciones</div>
+      </div>
+      {% for it in items %}
+        <div class="t-row">
+          <div class="ellipsis">{{ it.name }}</div>
+          <div class="col-size">{{ it.size }}</div>
+          <div class="col-actions">
+            <a href="{{ url_for('serve_inline', filename=it.name) }}">▶ Reproducir</a>
+            <a href="{{ url_for('serve_download', filename=it.name) }}">⬇ Descargar</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No hay descargas aún. Ve a <a href="{{ url_for('index') }}">Inicio</a> para bajar tu primer audio.</p>
+  {% endif %}
+</section>
+{% endblock %}

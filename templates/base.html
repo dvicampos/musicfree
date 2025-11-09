@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Descargador YouTube → Audio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <meta name="theme-color" content="#0f172a">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🎵 Downloader</div>
+    <nav>
+      <a href="{{ url_for('index') }}">Inicio</a>
+      <a href="{{ url_for('files') }}">Descargas</a>
+      <a href="https://ffmpeg.org/" target="_blank" rel="noopener">FFmpeg</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        <div class="flashwrap">
+          {% for cat,msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <p>Hecho con Flask + yt-dlp · Usa bajo normativa aplicable (derechos/ToS).</p>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

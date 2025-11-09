@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>YT → Audio (descarga directa)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="disc">●</span> YT → Audio
+    </div>
+    <nav>
+      <a href="https://ffmpeg.org/" target="_blank" rel="noopener">FFmpeg</a>
+      <a href="https://github.com/yt-dlp/yt-dlp" target="_blank" rel="noopener">yt-dlp</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>Descarga directa de audio</h1>
+      <p>Pega una URL de YouTube, elige formato y listo. La descarga inicia al instante — no se guarda nada en el servidor.</p>
+    </section>
+
+    <section class="card">
+      <form id="dl-form" class="grid" method="post" action="/download" enctype="multipart/form-data">
+        <div class="field wide">
+          <label for="url">URL de YouTube</label>
+          <input type="url" id="url" name="url" placeholder="https://www.youtube.com/watch?v=..." required>
+        </div>
+
+        <div class="field">
+          <label for="codec">Formato</label>
+          <select id="codec" name="codec">
+            <option value="mp3" selected>MP3</option>
+            <option value="m4a">M4A (AAC)</option>
+            <option value="opus">Opus</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="quality">Calidad (kbps)</label>
+          <select id="quality" name="quality">
+            <option value="128">128</option>
+            <option value="160">160</option>
+            <option value="192" selected>192</option>
+            <option value="256">256</option>
+            <option value="320">320</option>
+          </select>
+        </div>
+
+        <div class="field checkbox wide">
+          <label>
+            <input type="checkbox" id="use_cookies" name="use_cookies">
+            Usar cookies.txt (edad/geo/consent)
+          </label>
+        </div>
+
+        <div class="field wide" id="cookies_uploader" style="display:none;">
+          <label for="cookies_file">Sube tu cookies.txt</label>
+          <input type="file" id="cookies_file" name="cookies_file" accept=".txt">
+        </div>
+
+        <div class="actions wide">
+          <button type="submit" id="btn-download">Descargar ahora</button>
+          <button type="button" id="btn-reset" class="ghost">Limpiar</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="status" class="status" hidden>
+      <div class="spinner"></div>
+      <div class="status-text">
+        <strong>Preparando tu audio…</strong>
+        <small>Esto puede tardar unos segundos mientras se extrae el mejor audio y se convierte.</small>
+      </div>
+    </section>
+
+    <section class="tips">
+      <details>
+        <summary>¿Problemas con 403 o restricción por edad?</summary>
+        <ul>
+          <li>Marca <b>Usar cookies.txt</b> y sube el archivo exportado de tu navegador.</li>
+          <li>Prueba con una URL “limpia” sin parámetros extra.</li>
+          <li>Confirma que FFmpeg esté instalado y en el PATH.</li>
+        </ul>
+      </details>
+      <p class="legal">Usa este sitio conforme a las leyes, términos y derechos de autor aplicables.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Hecho con Flask + yt-dlp · Descarga directa (sin persistencia)
+  </footer>
+
+  <script>
+    // Muestra/oculta uploader de cookies
+    const ck = document.getElementById('use_cookies');
+    const up = document.getElementById('cookies_uploader');
+    ck.addEventListener('change', () => {
+      up.style.display = ck.checked ? 'block' : 'none';
+    });
+
+    // Submit con fetch para iniciar descarga y mostrar estado
+    const form = document.getElementById('dl-form');
+    const statusBox = document.getElementById('status');
+    const btnDownload = document.getElementById('btn-download');
+    const btnReset = document.getElementById('btn-reset');
+
+    btnReset.addEventListener('click', () => {
+      form.reset();
+      up.style.display = 'none';
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusBox.hidden = false;
+      btnDownload.disabled = true;
+
+      try {
+        const body = new FormData(form);
+        const resp = await fetch(form.action, { method: 'POST', body });
+
+        if (!resp.ok) {
+          // Si el backend respondió JSON con error, lo mostramos
+          try {
+            const data = await resp.json();
+            alert(data.error || 'Error de descarga.');
+          } catch {
+            alert('Error de descarga.');
+          }
+          return;
+        }
+
+        // Convierte la respuesta a Blob y dispara descarga
+        const blob = await resp.blob();
+        // Nombre: intenta derivarlo del Content-Disposition
+        const cd = resp.headers.get('Content-Disposition') || '';
+        let fname = 'audio';
+        const match = /filename="([^"]+)"/i.exec(cd);
+        if (match && match[1]) fname = match[1];
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fname;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert('Ocurrió un error: ' + err);
+      } finally {
+        statusBox.hidden = true;
+        btnDownload.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
