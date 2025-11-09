@@ -9,9 +9,7 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">
-      <span class="disc">●</span> YT → Audio
-    </div>
+    <div class="brand"><span class="disc">●</span> YT → Audio</div>
     <nav>
       <a href="https://ffmpeg.org/" target="_blank" rel="noopener">FFmpeg</a>
       <a href="https://github.com/yt-dlp/yt-dlp" target="_blank" rel="noopener">yt-dlp</a>
@@ -19,9 +17,17 @@
   </header>
 
   <main class="container">
+    {% if on_render %}
+      <div class="banner-warning">
+        <strong>Nota:</strong> Estás en un host de datacenter (Render). YouTube puede pedir verificación.
+        Usa <b>cookies</b> de tu navegador (estando logueado) y, si persiste, configura un <b>proxy residencial</b>.
+        {% if proxy %}<span class="ok">Proxy activo.</span>{% endif %}
+      </div>
+    {% endif %}
+
     <section class="hero">
       <h1>Descarga directa de audio</h1>
-      <p>Pega una URL de YouTube, elige formato y listo. La descarga inicia al instante — no se guarda nada en el servidor.</p>
+      <p>Pega la URL, elige formato y baja el audio. No se guarda nada en el servidor.</p>
     </section>
 
     <section class="card">
@@ -52,15 +58,20 @@
         </div>
 
         <div class="field checkbox wide">
-          <label>
-            <input type="checkbox" id="use_cookies" name="use_cookies">
-            Usar cookies.txt (edad/geo/consent)
-          </label>
+          <label><input type="checkbox" id="use_cookies" name="use_cookies"> Usar cookies</label>
+          <small>Recomendado en Render / hosts cloud.</small>
         </div>
 
         <div class="field wide" id="cookies_uploader" style="display:none;">
-          <label for="cookies_file">Sube tu cookies.txt</label>
+          <label for="cookies_file">Subir cookies.txt</label>
           <input type="file" id="cookies_file" name="cookies_file" accept=".txt">
+          <small>Puedes exportarlas con extensiones tipo “Get cookies.txt”.</small>
+        </div>
+
+        <div class="field wide" id="cookies_paster" style="display:none;">
+          <label for="cookies_text">O pegar cookies aquí</label>
+          <textarea id="cookies_text" name="cookies_text" rows="6" placeholder="# Netscape HTTP Cookie File…"></textarea>
+          <small>Pega el contenido de tu cookies.txt (formato Netscape).</small>
         </div>
 
         <div class="actions wide">
@@ -74,36 +85,45 @@
       <div class="spinner"></div>
       <div class="status-text">
         <strong>Preparando tu audio…</strong>
-        <small>Esto puede tardar unos segundos mientras se extrae el mejor audio y se convierte.</small>
+        <small>Extrayendo el mejor audio y convirtiendo con FFmpeg.</small>
       </div>
     </section>
 
     <section class="tips">
       <details>
-        <summary>¿Problemas con 403 o restricción por edad?</summary>
+        <summary>Cómo exportar cookies</summary>
+        <ol>
+          <li>Instala “Get cookies.txt” en tu navegador.</li>
+          <li>Abre YouTube <em>logueado</em>, exporta las cookies del dominio.</li>
+          <li>Sube el archivo o pega su contenido aquí.</li>
+        </ol>
+      </details>
+      <details>
+        <summary>¿Aún te marca “Sign in to confirm you’re not a bot”?</summary>
         <ul>
-          <li>Marca <b>Usar cookies.txt</b> y sube el archivo exportado de tu navegador.</li>
-          <li>Prueba con una URL “limpia” sin parámetros extra.</li>
-          <li>Confirma que FFmpeg esté instalado y en el PATH.</li>
+          <li>Verifica que las cookies sean recientes (vuelve a exportarlas).</li>
+          <li>Activa un <b>proxy residencial</b> en la variable <code>YTDLP_PROXY</code> (HTTP/SOCKS).</li>
+          <li>Evita VPNs de datacenter gratuitas (suelen estar bloqueadas).</li>
         </ul>
       </details>
-      <p class="legal">Usa este sitio conforme a las leyes, términos y derechos de autor aplicables.</p>
+      <p class="legal">Usa conforme a leyes y términos aplicables.</p>
     </section>
   </main>
 
   <footer class="footer">
-    Hecho con Flask + yt-dlp · Descarga directa (sin persistencia)
+    Flask + yt-dlp · Descarga directa
   </footer>
 
   <script>
-    // Muestra/oculta uploader de cookies
     const ck = document.getElementById('use_cookies');
     const up = document.getElementById('cookies_uploader');
+    const ps = document.getElementById('cookies_paster');
     ck.addEventListener('change', () => {
-      up.style.display = ck.checked ? 'block' : 'none';
+      const show = ck.checked;
+      up.style.display = show ? 'block' : 'none';
+      ps.style.display = show ? 'block' : 'none';
     });
 
-    // Submit con fetch para iniciar descarga y mostrar estado
     const form = document.getElementById('dl-form');
     const statusBox = document.getElementById('status');
     const btnDownload = document.getElementById('btn-download');
@@ -112,6 +132,7 @@
     btnReset.addEventListener('click', () => {
       form.reset();
       up.style.display = 'none';
+      ps.style.display = 'none';
     });
 
     form.addEventListener('submit', async (e) => {
@@ -124,19 +145,12 @@
         const resp = await fetch(form.action, { method: 'POST', body });
 
         if (!resp.ok) {
-          // Si el backend respondió JSON con error, lo mostramos
-          try {
-            const data = await resp.json();
-            alert(data.error || 'Error de descarga.');
-          } catch {
-            alert('Error de descarga.');
-          }
+          try { const data = await resp.json(); alert(data.error || 'Error de descarga.'); }
+          catch { alert('Error de descarga.'); }
           return;
         }
 
-        // Convierte la respuesta a Blob y dispara descarga
         const blob = await resp.blob();
-        // Nombre: intenta derivarlo del Content-Disposition
         const cd = resp.headers.get('Content-Disposition') || '';
         let fname = 'audio';
         const match = /filename="([^"]+)"/i.exec(cd);
@@ -144,12 +158,8 @@
 
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = fname;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
+        a.href = url; a.download = fname; document.body.appendChild(a); a.click();
+        a.remove(); URL.revokeObjectURL(url);
       } catch (err) {
         alert('Ocurrió un error: ' + err);
       } finally {

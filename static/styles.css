@@ -1,22 +1,19 @@
 :root{
   --ink:#e2e8f0;
   --muted:#a5b4fc;
-  --bg: radial-gradient(circle at 10% -20%, #0ea5e9 0%, rgba(2,6,23,0) 35%), 
-        radial-gradient(circle at 90% -10%, #22d3ee 0%, rgba(2,6,23,0) 30%), 
+  --bg: radial-gradient(circle at 10% -20%, #0ea5e9 0%, rgba(2,6,23,0) 35%),
+        radial-gradient(circle at 90% -10%, #22d3ee 0%, rgba(2,6,23,0) 30%),
         linear-gradient(180deg, #0f172a 0%, #020617 70%, #000 100%);
   --card: rgba(15,23,42,.55);
   --stroke: rgba(148,163,184,.25);
   --accent:#38bdf8;
-  --accent-2:#22d3ee;
 }
 
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
-  margin:0;
-  font: 15px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  color:var(--ink);
-  background:var(--bg);
+  margin:0; font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  color:var(--ink); background:var(--bg);
   display:flex; flex-direction:column;
 }
 
@@ -24,18 +21,24 @@ body{
   display:flex;justify-content:space-between;align-items:center;
   padding:12px 18px;border-bottom:1px solid var(--stroke);
   background: rgba(2,6,23,.45); backdrop-filter: blur(8px);
-  position:sticky;top:0;z-index:10;
+  position:sticky; top:0; z-index:10;
 }
-.brand{font-weight:800;letter-spacing:.2px;display:flex;align-items:center;gap:8px}
+.brand{font-weight:800; letter-spacing:.2px; display:flex; gap:8px; align-items:center}
 .brand .disc{color:var(--accent)}
-.topbar a{color:var(--ink);opacity:.9;margin-left:12px;text-decoration:none}
+.topbar a{color:var(--ink); opacity:.9; margin-left:12px; text-decoration:none}
 .topbar a:hover{opacity:1}
 
-.container{width:min(960px, 92vw); margin: 26px auto; flex:1}
+.container{width:min(960px,92vw); margin:26px auto; flex:1}
+
+.banner-warning{
+  background: rgba(234,179,8,.12);
+  border:1px solid rgba(234,179,8,.45);
+  color:#fde68a; padding:12px 14px; border-radius:12px; margin-bottom:12px;
+}
+.banner-warning .ok{margin-left:8px; color:#86efac}
 
 .hero{
-  margin-bottom:14px;
-  padding:18px 20px;
+  margin-bottom:14px; padding:18px 20px;
   border:1px solid var(--stroke); border-radius:16px;
   background: linear-gradient(180deg, rgba(34,211,238,.07), rgba(56,189,248,.03));
   box-shadow: 0 18px 50px rgba(0,0,0,.18);
@@ -45,20 +48,20 @@ body{
 
 .card{
   background:var(--card); border:1px solid var(--stroke); border-radius:16px;
-  padding:20px; box-shadow: 0 18px 50px rgba(0,0,0,.16);
+  padding:20px; box-shadow:0 18px 50px rgba(0,0,0,.16);
 }
 
-.grid{display:grid; gap:14px; grid-template-columns: 1fr 1fr}
-.field{display:flex;flex-direction:column;gap:8px}
-.field.wide{grid-column: span 2}
-.field.checkbox{grid-column: span 2}
-
+.grid{display:grid; gap:14px; grid-template-columns:1fr 1fr}
+.field{display:flex; flex-direction:column; gap:8px}
+.field.wide{grid-column:span 2}
+.field.checkbox{grid-column:span 2}
 label{font-weight:600; opacity:.95}
-input[type="url"], input[type="file"], select{
+input[type="url"], input[type="file"], select, textarea{
   background:rgba(15,23,42,.35);
-  border:1px solid var(--stroke);
-  border-radius:12px; padding:.7rem .75rem; color:var(--ink);
+  border:1px solid var(--stroke); border-radius:12px;
+  padding:.7rem .75rem; color:var(--ink);
 }
+textarea{resize:vertical; min-height:120px}
 input::placeholder{color:#93c5fd; opacity:.75}
 
 .actions{display:flex; gap:10px; align-items:center}
@@ -70,8 +73,7 @@ button{
   background:
     radial-gradient(120% 120% at 0% 0%, rgba(56,189,248,.25), rgba(56,189,248,0) 50%),
     linear-gradient(180deg, rgba(34,211,238,.22), rgba(56,189,248,.08));
-  border-color: rgba(56,189,248,.45);
-  font-weight:700;
+  border-color: rgba(56,189,248,.45); font-weight:700;
 }
 button:hover{filter:brightness(1.05)}
 .ghost{background:rgba(255,255,255,.04)}
@@ -84,17 +86,15 @@ button:hover{filter:brightness(1.05)}
 }
 .spinner{
   width:22px; height:22px; border-radius:50%;
-  border:3px solid rgba(56,189,248,.25);
-  border-top-color: var(--accent);
+  border:3px solid rgba(56,189,248,.25); border-top-color:var(--accent);
   animation: spin 1s linear infinite;
 }
-@keyframes spin{to{transform: rotate(360deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
 .status-text small{color:#9ca3af; display:block}
 
 .tips{
-  margin-top:18px;
-  padding:16px; border:1px solid var(--stroke); border-radius:14px;
-  background: rgba(15,23,42,.45);
+  margin-top:18px; padding:16px; border:1px solid var(--stroke);
+  border-radius:14px; background: rgba(15,23,42,.45);
 }
 .tips summary{cursor:pointer}
 .legal{opacity:.8; margin-top:10px}
@@ -105,8 +105,8 @@ button:hover{filter:brightness(1.05)}
   background: rgba(2,6,23,.35); backdrop-filter: blur(6px);
 }
 
-@media (max-width: 720px){
-  .grid{grid-template-columns: 1fr}
-  .field.checkbox{grid-column: 1}
-  .field.wide{grid-column: 1}
+@media (max-width:720px){
+  .grid{grid-template-columns:1fr}
+  .field.checkbox{grid-column:1}
+  .field.wide{grid-column:1}
 }
